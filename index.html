@@ -1,12 +1,428 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi primera página web</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Portal SENA - Gestión de Aprendices e Instructores</title>
+  <!-- Bootstrap CSS (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Chart.js (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* Estilos personalizados */
+    body { background: #f7f9fc; }
+    .hero { background: linear-gradient(90deg,#00640022,#0056b333); padding: 28px; border-radius: 8px; }
+    .card { box-shadow: 0 4px 14px rgba(0,0,0,0.05); }
+    .pointer { cursor: pointer; }
+    .small-muted { font-size: .85rem; color: #6c757d; }
+    footer { font-size: .85rem; color: #6c757d; }
+  </style>
 </head>
 <body>
-  <h1>¡Hola mundo desde Git y GitHub!</h1>
-  <p>Esta es mi primera página web usando HTML y Git.</p>
+  <div class="container my-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="m-0">Portal SENA - Gestión de Aprendices e Instructores</h2>
+      <div>
+        <button id="btnShowLogin" class="btn btn-outline-primary me-2">Iniciar sesión</button>
+        <button id="btnResetData" class="btn btn-outline-secondary">Restablecer datos</button>
+      </div>
+    </div>
+
+    <!-- Hero / intro -->
+    <div class="hero mb-4">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <h4>Bienvenido al portal de gestión del SENA (simulado)</h4>
+          <p class="mb-1">Aquí los aprendices e instructores pueden ver información, consultar cursos disponibles, y revisar estadísticas. Este es un ejemplo interactivo de front-end listo para usar en Visual Studio Code.</p>
+          <p class="small-muted mb-0">Nota: autenticación simulada en el navegador (no usar en producción).</p>
+        </div>
+        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+          <button id="btnOpenDashboard" class="btn btn-success">Ir al dashboard</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Left column: forms and tables -->
+      <div class="col-lg-5">
+        <!-- Login / Register card -->
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title">Acceso</h5>
+            <p class="small-muted">Simula inicio de sesión como aprendiz o instructor.</p>
+
+            <div class="mb-2">
+              <select id="roleSelect" class="form-select">
+                <option value="aprendiz">Aprendiz</option>
+                <option value="instructor">Instructor</option>
+              </select>
+            </div>
+
+            <div class="input-group mb-2">
+              <input id="loginEmail" type="email" class="form-control" placeholder="correo@ejemplo.com" />
+            </div>
+            <div class="d-flex gap-2">
+              <button id="btnLogin" class="btn btn-primary">Iniciar sesión</button>
+              <button id="btnRegister" class="btn btn-outline-primary">Registrar (local)</button>
+            </div>
+            <div id="loginMessage" class="mt-2 small-muted"></div>
+          </div>
+        </div>
+
+        <!-- Add apprentice / instructor -->
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title">Registrar aprendiz / instructor</h5>
+            <form id="addPersonForm">
+              <div class="mb-2">
+                <select id="personRole" class="form-select">
+                  <option value="aprendiz">Aprendiz</option>
+                  <option value="instructor">Instructor</option>
+                </select>
+              </div>
+              <div class="mb-2"><input id="personName" class="form-control" placeholder="Nombre completo" required></div>
+              <div class="mb-2"><input id="personEmail" type="email" class="form-control" placeholder="Correo" required></div>
+              <div class="mb-2"><input id="personArea" class="form-control" placeholder="Área/Programa (ej: Desarrollo)" required></div>
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">Agregar</button>
+                <button id="btnExportCSV" type="button" class="btn btn-outline-secondary">Exportar CSV</button>
+              </div>
+            </form>
+            <div id="addPersonMsg" class="mt-2 small-muted"></div>
+          </div>
+        </div>
+
+        <!-- Courses available -->
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Cursos disponibles</h5>
+            <div id="coursesList" class="mb-2"></div>
+            <div class="d-flex gap-2">
+              <input id="newCourseName" class="form-control" placeholder="Nombre del curso" />
+              <button id="btnAddCourse" class="btn btn-outline-primary">Añadir</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right column: dashboard & charts -->
+      <div class="col-lg-7">
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title">Dashboard</h5>
+            <div class="row g-3">
+              <div class="col-6 col-md-4">
+                <div class="p-3 border rounded text-center">
+                  <div class="small-muted">Aprendices</div>
+                  <div id="metricAprendices" class="h4 m-0">0</div>
+                </div>
+              </div>
+              <div class="col-6 col-md-4">
+                <div class="p-3 border rounded text-center">
+                  <div class="small-muted">Instructores</div>
+                  <div id="metricInstructores" class="h4 m-0">0</div>
+                </div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="p-3 border rounded text-center">
+                  <div class="small-muted">Cursos registrados</div>
+                  <div id="metricCursos" class="h4 m-0">0</div>
+                </div>
+              </div>
+            </div>
+
+            <hr />
+            <div class="row">
+              <div class="col-md-6">
+                <canvas id="chartArea" height="200"></canvas>
+              </div>
+              <div class="col-md-6">
+                <canvas id="chartPrograms" height="200"></canvas>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Table of people -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="card-title m-0">Lista de aprendices e instructores</h5>
+              <div class="d-flex gap-2">
+                <input id="searchInput" class="form-control form-control-sm" placeholder="Buscar por nombre o correo" />
+                <select id="filterRole" class="form-select form-select-sm w-auto">
+                  <option value="">Todos</option>
+                  <option value="aprendiz">Aprendiz</option>
+                  <option value="instructor">Instructor</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-sm table-hover">
+                <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Área</th><th>Acciones</th></tr></thead>
+                <tbody id="peopleTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <footer class="mt-4">Hecho como ejemplo educativo para practicar Git, GitHub y HTML/JS. Abre este archivo en Visual Studio Code y usa Live Server para ver cambios en vivo.</footer>
+  </div>
+
+  <!-- Modal: Profile -->
+  <div class="modal fade" id="profileModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="profileModalTitle">Perfil</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="profileContent"></div>
+          <hr />
+          <h6>Historial de cursos (simulado)</h6>
+          <ul id="profileCourses"></ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS (popper + bootstrap) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Application JS -->
+  <script>
+    // Datos iniciales de ejemplo
+    const samplePeople = [
+      {id:1, role:'aprendiz', name:'María Pérez', email:'maria.perez@example.com', area:'Desarrollo Web'},
+      {id:2, role:'aprendiz', name:'Juan Gómez', email:'juan.gomez@example.com', area:'Electricidad'},
+      {id:3, role:'instructor', name:'Ana López', email:'ana.lopez@example.com', area:'Desarrollo Web'},
+      {id:4, role:'instructor', name:'Carlos Ramírez', email:'carlos.ramirez@example.com', area:'Mecánica'}
+    ];
+
+    const sampleCourses = [
+      'Desarrollo Web (HTML/CSS/JS)',
+      'Instalaciones Eléctricas',
+      'Mecánica Automotriz',
+      'Gestión de Proyectos'
+    ];
+
+    // Estado (guardado en localStorage para persistencia local)
+    const STATE_KEY = 'sena_portal_state_v1';
+
+    function loadState(){
+      const raw = localStorage.getItem(STATE_KEY);
+      if(raw) return JSON.parse(raw);
+      return { people: samplePeople.slice(), courses: sampleCourses.slice(), nextId: 5 };
+    }
+    function saveState(s){ localStorage.setItem(STATE_KEY, JSON.stringify(s)); }
+
+    let state = loadState();
+
+    // Elementos DOM
+    const peopleTable = document.getElementById('peopleTable');
+    const metricAprendices = document.getElementById('metricAprendices');
+    const metricInstructores = document.getElementById('metricInstructores');
+    const metricCursos = document.getElementById('metricCursos');
+    const coursesList = document.getElementById('coursesList');
+
+    // Inicialización
+    function init(){
+      renderPeopleTable();
+      renderCourses();
+      updateMetrics();
+      setupEventListeners();
+      renderCharts();
+    }
+
+    function setupEventListeners(){
+      document.getElementById('addPersonForm').addEventListener('submit', (e)=>{
+        e.preventDefault(); addPersonFromForm();
+      });
+      document.getElementById('btnAddCourse').addEventListener('click', addCourseFromInput);
+      document.getElementById('btnExportCSV').addEventListener('click', exportCSV);
+      document.getElementById('searchInput').addEventListener('input', renderPeopleTable);
+      document.getElementById('filterRole').addEventListener('change', renderPeopleTable);
+      document.getElementById('btnResetData').addEventListener('click', resetState);
+      document.getElementById('btnShowLogin').addEventListener('click', ()=>{ document.getElementById('loginEmail').focus(); });
+      document.getElementById('btnOpenDashboard').addEventListener('click', ()=>{ window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'}); });
+      document.getElementById('btnLogin').addEventListener('click', simulateLogin);
+      document.getElementById('btnRegister').addEventListener('click', ()=>{ document.getElementById('personRole').value = document.getElementById('roleSelect').value; document.getElementById('personName').focus(); });
+    }
+
+    function renderPeopleTable(){
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const roleFilter = document.getElementById('filterRole').value;
+      const rows = state.people.filter(p=>{
+        if(roleFilter && p.role !== roleFilter) return false;
+        if(!q) return true;
+        return (p.name + ' ' + p.email + ' ' + p.area).toLowerCase().includes(q);
+      });
+
+      peopleTable.innerHTML = '';
+      for(const p of rows){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(p.name)}</td>
+          <td>${escapeHtml(p.email)}</td>
+          <td>${escapeHtml(capitalize(p.role))}</td>
+          <td>${escapeHtml(p.area)}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-info me-1" onclick="viewProfile(${p.id})">Ver</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deletePerson(${p.id})">Eliminar</button>
+          </td>
+        `;
+        peopleTable.appendChild(tr);
+      }
+    }
+
+    function renderCourses(){
+      coursesList.innerHTML = '';
+      for(const c of state.courses){
+        const span = document.createElement('span');
+        span.className = 'badge bg-primary me-1 mb-1';
+        span.textContent = c;
+        coursesList.appendChild(span);
+      }
+      metricCursos.textContent = state.courses.length;
+    }
+
+    function updateMetrics(){
+      const aprendices = state.people.filter(p=>p.role==='aprendiz').length;
+      const instructores = state.people.filter(p=>p.role==='instructor').length;
+      metricAprendices.textContent = aprendices;
+      metricInstructores.textContent = instructores;
+      metricCursos.textContent = state.courses.length;
+    }
+
+    function addPersonFromForm(){
+      const role = document.getElementById('personRole').value;
+      const name = document.getElementById('personName').value.trim();
+      const email = document.getElementById('personEmail').value.trim();
+      const area = document.getElementById('personArea').value.trim();
+      if(!name||!email||!area) return showMsg('addPersonMsg','Completa todos los campos', 'danger');
+      const id = state.nextId++;
+      const person = { id, role, name, email, area };
+      state.people.push(person);
+      saveState(state); renderPeopleTable(); updateMetrics(); renderCharts(); renderCourses();
+      document.getElementById('addPersonForm').reset();
+      showMsg('addPersonMsg','Registro agregado correctamente', 'success');
+    }
+
+    function addCourseFromInput(){
+      const v = document.getElementById('newCourseName').value.trim();
+      if(!v) return;
+      state.courses.push(v);
+      saveState(state); document.getElementById('newCourseName').value = '';
+      renderCourses(); renderCharts(); showMsg('addPersonMsg','Curso añadido', 'success');
+    }
+
+    function deletePerson(id){
+      if(!confirm('¿Eliminar esta persona?')) return;
+      state.people = state.people.filter(p=>p.id!==id);
+      saveState(state); renderPeopleTable(); updateMetrics(); renderCharts();
+    }
+
+    function viewProfile(id){
+      const p = state.people.find(x=>x.id===id); if(!p) return;
+      const modalEl = document.getElementById('profileModal');
+      const modal = new bootstrap.Modal(modalEl);
+      document.getElementById('profileModalTitle').textContent = p.name + ' — ' + capitalize(p.role);
+      document.getElementById('profileContent').innerHTML = `
+        <p><strong>Correo:</strong> ${escapeHtml(p.email)}</p>
+        <p><strong>Área / Programa:</strong> ${escapeHtml(p.area)}</p>
+        <p class="small-muted">Información simulada para demostración.</p>
+      `;
+      const ul = document.getElementById('profileCourses'); ul.innerHTML = '';
+      // generar historial de cursos falso
+      const cnt = Math.max(1, Math.floor(Math.random()*3));
+      for(let i=0;i<cnt;i++){
+        const li = document.createElement('li');
+        li.textContent = state.courses[Math.floor(Math.random()*state.courses.length)] || 'Curso demo';
+        ul.appendChild(li);
+      }
+      modal.show();
+    }
+
+    // Simple login simulado
+    function simulateLogin(){
+      const role = document.getElementById('roleSelect').value;
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const msgEl = document.getElementById('loginMessage');
+      if(!email) return showInlineMsg(msgEl,'Ingresa un correo para iniciar sesión', 'danger');
+      const found = state.people.find(p=>p.email.toLowerCase()===email && p.role===role);
+      if(found){
+        showInlineMsg(msgEl, `Bienvenido/a ${found.name} (${capitalize(found.role)})`, 'success');
+        // desplazar al perfil
+        setTimeout(()=> viewProfile(found.id), 700);
+      } else {
+        showInlineMsg(msgEl, 'Usuario no encontrado. Puedes registrarte localmente.', 'warning');
+      }
+    }
+
+    // Charts
+    let chartArea=null, chartPrograms=null;
+    function renderCharts(){
+      const ctxA = document.getElementById('chartArea').getContext('2d');
+      const ctxP = document.getElementById('chartPrograms').getContext('2d');
+
+      const countsByRole = state.people.reduce((acc,p)=>{ acc[p.role] = (acc[p.role]||0)+1; return acc; }, {});
+      const labelsA = Object.keys(countsByRole).map(capitalize);
+      const dataA = Object.values(countsByRole);
+
+      const countsByArea = state.people.reduce((acc,p)=>{ acc[p.area] = (acc[p.area]||0)+1; return acc; }, {});
+      const labelsP = Object.keys(countsByArea);
+      const dataP = Object.values(countsByArea);
+
+      if(chartArea) chartArea.destroy();
+      chartArea = new Chart(ctxA, { type:'doughnut', data:{ labels: labelsA, datasets:[{ data: dataA }] }, options:{ plugins:{ legend:{ position:'bottom' } } } });
+
+      if(chartPrograms) chartPrograms.destroy();
+      chartPrograms = new Chart(ctxP, { type:'bar', data:{ labels: labelsP, datasets:[{ label:'Participantes por área', data: dataP }] }, options:{ scales:{ y:{ beginAtZero:true } } } });
+
+      updateMetrics();
+    }
+
+    // Export CSV simple
+    function exportCSV(){
+      const rows = [ ['id','rol','nombre','email','area'] ];
+      for(const p of state.people) rows.push([p.id,p.role,p.name,p.email,p.area]);
+      const csv = rows.map(r=>r.map(cell=>`"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'personas_sena.csv'; a.click(); URL.revokeObjectURL(url);
+    }
+
+    // Resetear datos demo
+    function resetState(){ if(!confirm('Restablecer los datos de ejemplo? Esto eliminará la información actual en este navegador.')) return; state = { people: samplePeople.slice(), courses: sampleCourses.slice(), nextId: 5 }; saveState(state); renderPeopleTable(); renderCourses(); renderCharts(); showMsg('addPersonMsg','Datos restablecidos','info'); }
+
+    // Helpers
+    function showMsg(id, text, type='info'){ const el = document.getElementById(id); el.className = 'mt-2 small-muted'; el.textContent = text; setTimeout(()=>{ el.textContent=''; }, 3500); }
+    function showInlineMsg(el, text, type='info'){ el.className = type==='danger' ? 'text-danger' : (type==='success'?'text-success':'text-warning'); el.textContent = text; setTimeout(()=> el.textContent = '', 4000); }
+    function escapeHtml(s){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+    function capitalize(s){ if(!s) return s; return s.charAt(0).toUpperCase()+s.slice(1); }
+
+    // Expose some functions to inline handlers
+    window.viewProfile = viewProfile;
+    window.deletePerson = deletePerson;
+
+    // Utility: clear localStorage key on first load (for dev) - commented out for persistence
+    // localStorage.removeItem(STATE_KEY);
+
+    // Inicializar UI
+    init();
+
+  </script>
 </body>
 </html>
+
